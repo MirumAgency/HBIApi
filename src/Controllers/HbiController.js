@@ -7,11 +7,11 @@ const insertUser = async (req, res) => {
     if (!idLearner) return res.status(403).json({ message: 'The idLearner is required' });
     try {
         const tokenGenerate = genRanHex(6);
-
         const user = await users.findOne({
             where: { idLearner },
         });
         if (user) {
+            if (user.token) return res.status(403).json({ token: user.token });
             const updateUser = await users.update({
                 token: tokenGenerate
             }, {
@@ -30,8 +30,8 @@ const insertUser = async (req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({ error: err });
-    }
-}
+    };
+};
 
 const completionModule = async (req, res) => {
     try {
@@ -67,12 +67,11 @@ const loginUser = async (req, res) => {
             res.status(200).json({ message: 'success', user: user });
         } else {
             res.status(403).json({ message: 'You token is invalid' });
-        }
-
+        };
     } catch (err) {
         res.status(500).json({ error: err });
-    }
-}
+    };
+};
 
 const insertReport = async (req, res) => {
     try {
@@ -86,6 +85,7 @@ const insertReport = async (req, res) => {
             result: result,
             userIdUser: idUser,
             moduleIdModule: idModule,
+            sentlitmos: false
         });
 
 
@@ -93,20 +93,22 @@ const insertReport = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err });
     }
-}
+};
+
 const getReport = async (req, res) => {
     try {
         const { idLearner, idModule } = req.params;
 
         const reportUser = await users.findOne({
             where: {
-                idLearner: idLearner
+                idLearner: idLearner,
             },
             attributes: [],
             include: [{
                 model: report,
                 where: {
-                    moduleIdModule: idModule
+                    moduleIdModule: idModule,
+                    sentlitmos: false
                 }
             }]
         })
@@ -125,11 +127,53 @@ const getReportsByUser = async (req, res) => {
             },
             include: [{
                 model: report,
-                attributes: ['userIdUser', 'result', 'date', 'moduleIdModule'],
+                attributes: ['userIdUser', 'result', 'date', 'moduleIdModule', 'idReport',    'sentlitmos']
             }],
             attributes: ['name', 'idLearner'],
         });
         res.status(200).json(reports);
+    } catch (err) {
+        res.status(500).json({ error: err });
+    };
+};
+
+const changeSentlitmos = async (req, res) => {
+    try {
+        const { idReport } = req.params;
+        const Report = await report.findByPk(idReport);
+        if (!Report) return res.json('The report do not exist');
+        const reportUpdate = await report.update({
+            sentlitmos: true
+        }, {
+            where: {
+                idReport: idReport,
+            }
+        });
+        res.status(200).json({ response: reportUpdate });
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: err });
+    };
+};
+
+const countModules = async (req, res) => {
+    try {
+        const { idLearner } = req.params;
+        const user = await users.findOne({
+            where: {
+                idLearner: idLearner
+            },
+            attributes: ['idUser']
+        });
+        if (!user) return res.json('The user do not exist');
+        const countModules = await report.count({
+            where: {
+                userIdUser: user.idUser,
+            },
+            distinct: true,
+            col: 'moduleIdModule'
+        });
+        res.status(200).json({ count: countModules });
     } catch (err) {
         res.status(500).json({ error: err });
     };
@@ -141,5 +185,7 @@ module.exports = {
     loginUser,
     insertReport,
     getReport,
-    getReportsByUser
+    getReportsByUser,
+    changeSentlitmos,
+    countModules
 }
