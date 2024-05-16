@@ -7,5 +7,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         date: { type: DataTypes.DATE, allowNull: false },
         result: { type: DataTypes.STRING, allowNull: false },
+        sentlitmos: { type: DataTypes.BOOLEAN, allowNull: false },
     });
 }
