@@ -1,14 +1,23 @@
-const { insertUser, completionModule, loginUser, insertReport, getReport, getReportsByUser } = require('../Controllers/HbiController');
+const {
+  insertUser,
+  completionModule,
+  loginUser,
+  insertReport,
+  getReport,
+  getReportsByUser,
+  changeSentlitmos,
+  countModules,
+} = require("../Controllers/HbiController");
 
-const router = require('express').Router();
+const router = require("express").Router();
 
-router.post('/user', insertUser);
-router.post('/login', loginUser);
-router.post('/module', completionModule);
-router.post('/report', insertReport);
-router.post('/changeSentlitmos/:idReport', changeSentlitmos);
-router.get('/report/:idLearner/:idModule', getReport);
-router.get('/reportsByUser/:idLearner', getReportsByUser);
-router.get('/countModules/:idLearner', countModules);
+router.post("/user", insertUser);
+router.post("/login", loginUser);
+router.post("/module", completionModule);
+router.post("/report", insertReport);
+router.post("/changeSentlitmos/:idReport", changeSentlitmos);
+router.get("/report/:idLearner/:idModule", getReport);
+router.get("/reportsByUser/:idLearner", getReportsByUser);
+router.get("/countModules/:idLearner", countModules);
 
 module.exports = router;
